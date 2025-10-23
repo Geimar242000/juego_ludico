@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a0a"/>
+      <stop offset="100%" stop-color="#2b2b2b"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="360" fill="url(#g1)"/>
+  <g fill="#e5e7eb">
+    <text x="36" y="120" font-size="32" font-family="Inter, Arial" font-weight="700">¡Aprende y gana puntos!</text>
+    <text x="36" y="170" font-size="18" font-family="Inter, Arial" opacity=".9">Completa el Quiz del C.S.T.</text>
+  </g>
+</svg>

@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Juego Lúdico: Sueldos y Salarios (C.S.T.)</title>
+  <meta name="description" content="Juego lúdico sobre sueldos y salarios basado en conceptos del Código Sustantivo del Trabajo" />
+  <link rel="icon" type="image/svg+xml" href="./assets/logo.svg" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#0f172a" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .text-gradient { background: linear-gradient(90deg, #3b82f6, #a855f7, #22c55e); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .btn-grad { background: linear-gradient(135deg, #3b82f6, #a855f7 40%, #22c55e); color: #fff; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+    .btn-grad:hover { filter: brightness(1.08); }
+    .card-surface { background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.75)); }
+    .dark .card-surface { background: linear-gradient(180deg, rgba(2,6,23,0.95), rgba(2,6,23,0.8)); }
+    .soft-border { border: 1px solid rgba(100,116,139,.2); }
+    /* Banner progress bar color */
+    #quiz-progress { background: linear-gradient(90deg, #3b82f6, #a855f7, #22c55e) !important; }
+    @media print { .text-gradient { color: #000 !important; background: none !important; -webkit-background-clip: initial; background-clip: initial; } }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-white to-slate-100 dark:from-slate-900 dark:to-black text-slate-800 dark:text-slate-100">
+  <header class="sticky top-0 z-10 bg-white/90 dark:bg-slate-900/80 backdrop-blur border-b border-slate-200 dark:border-slate-700">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="./assets/logo.svg" alt="Logo" class="w-9 h-9 rounded" />
+        <h1 class="text-lg md:text-xl font-extrabold text-gradient">Juego Lúdico: Sueldos y Salarios (C.S.T.)</h1>
+      </div>
+
+  <!-- Modal de gestión de banner -->
+  <div id="banner-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="banner-title">
+    <div class="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-xl shadow p-6">
+      <h3 id="banner-title" class="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Gestionar imágenes del banner</h3>
+      <div class="grid md:grid-cols-2 gap-4 text-sm">
+        <div class="space-y-2">
+          <label class="block">Agregar por URL</label>
+          <div class="flex gap-2">
+            <input id="banner-url" type="url" class="flex-1 px-3 py-2 border rounded" placeholder="https://..." />
+            <button id="banner-add-url" class="px-3 py-2 rounded-md btn-grad">Agregar</button>
+          </div>
+          <p class="text-xs text-slate-500">Usa imágenes horizontales (≈1200x360) para mejor resultado.</p>
+        </div>
+        <div class="space-y-2">
+          <label class="block">Subir archivo</label>
+          <input id="banner-file" type="file" accept="image/*" class="w-full px-3 py-2 border rounded" />
+          <button id="banner-add-file" class="px-3 py-2 rounded-md btn-grad">Subir</button>
+          <p class="text-xs text-slate-500">El archivo se guardará localmente (navegador) como imagen embebida.</p>
+        </div>
+      </div>
+      <div class="mt-5">
+        <h4 class="font-semibold mb-2">Imágenes actuales</h4>
+        <div id="banner-list" class="grid md:grid-cols-3 gap-3"></div>
+      </div>
+      <div class="flex justify-end gap-2 mt-5">
+        <button id="banner-close" class="px-3 py-1.5 rounded-md border">Cerrar</button>
+        <button id="banner-clear" class="px-3 py-1.5 rounded-md bg-red-600 text-white">Vaciar</button>
+      </div>
+    </div>
+  </div>
+      <nav class="flex items-center gap-2 text-sm">
+        <button data-view="home" class="nav-btn px-3 py-1.5 rounded-md btn-grad">Inicio</button>
+        <button data-view="quiz" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800">Quiz</button>
+        <button data-view="cases" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800">Casos</button>
+        <button data-view="calc" class="nav-btn px-3 py-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800">Calculadora</button>
+        <button id="open-settings" aria-label="Configurar proyecto" class="ml-2 px-2 py-1 rounded border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Config</button>
+        <button id="open-banner" aria-label="Gestionar banner" class="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Banner</button>
+        <button id="theme-toggle" aria-label="Cambiar tema" class="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Tema</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6">
+    <!-- Inicio -->
+    <section id="view-home" class="view space-y-6" aria-labelledby="home-title">
+      <!-- Banner -->
+      <div class="relative overflow-hidden rounded-xl soft-border shadow">
+        <div id="banner-track" class="whitespace-nowrap transition-transform duration-500 ease-in-out">
+          <img id="banner-img-0" src="./assets/banner1.svg" alt="Banner sueldos y salarios" class="inline-block w-full h-48 md:h-64 object-cover" />
+          <img id="banner-img-1" src="./assets/banner2.svg" alt="Banner casos prácticos" class="inline-block w-full h-48 md:h-64 object-cover" />
+          <img id="banner-img-2" src="./assets/banner3.svg" alt="Banner calculadora" class="inline-block w-full h-48 md:h-64 object-cover" />
+        </div>
+        <button id="banner-prev" aria-label="Anterior" class="absolute left-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded btn-grad text-xs">‹</button>
+        <button id="banner-next" aria-label="Siguiente" class="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded btn-grad text-xs">›</button>
+        <div id="banner-dots" class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1"></div>
+      </div>
+
+      <div class="card-surface rounded-xl soft-border shadow p-6">
+        <h2 id="home-title" class="text-xl font-extrabold mb-2 text-gradient">Bienvenido</h2>
+        <p class="text-sm text-slate-600 dark:text-slate-300">Explora conceptos clave de sueldos y salarios inspirados en el Código Sustantivo del Trabajo (C.S.T.) a través de un quiz, casos prácticos interactivos y una calculadora sandbox de nómina básica.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="card-surface rounded-xl soft-border shadow p-5">
+          <h3 class="font-extrabold text-gradient">Quiz</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-300">Responde preguntas y gana puntos. Feedback inmediato.</p>
+          <button data-view="quiz" class="nav-btn mt-3 px-3 py-1.5 rounded-md text-sm btn-grad">Comenzar</button>
+        </div>
+        <div class="card-surface rounded-xl soft-border shadow p-5">
+          <h3 class="font-extrabold text-gradient">Casos</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-300">Analiza situaciones reales y elige la mejor respuesta.</p>
+          <button data-view="cases" class="nav-btn mt-3 px-3 py-1.5 rounded-md text-sm btn-grad">Practicar</button>
+        </div>
+        <div class="card-surface rounded-xl soft-border shadow p-5">
+          <h3 class="font-extrabold text-gradient">Calculadora</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-300">Simula una liquidación mensual básica con parámetros configurables.</p>
+          <button data-view="calc" class="nav-btn mt-3 px-3 py-1.5 rounded-md text-sm btn-grad">Simular</button>
+        </div>
+      </div>
+
+      <!-- Anuncios -->
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="rounded-xl overflow-hidden soft-border shadow">
+          <img id="ad-img-1" src="./assets/ad1.svg" alt="Anuncio Quiz" class="w-full h-40 object-cover" />
+          <div class="p-4 bg-white/70 dark:bg-slate-900/70">
+            <button data-view="quiz" class="nav-btn px-3 py-1.5 rounded-md text-sm btn-grad w-full">Ir al Quiz</button>
+          </div>
+        </div>
+        <div class="rounded-xl overflow-hidden soft-border shadow">
+          <img id="ad-img-2" src="./assets/ad2.svg" alt="Anuncio Casos" class="w-full h-40 object-cover" />
+          <div class="p-4 bg-white/70 dark:bg-slate-900/70">
+            <button data-view="cases" class="nav-btn px-3 py-1.5 rounded-md text-sm btn-grad w-full">Resolver Casos</button>
+          </div>
+        </div>
+        <div class="rounded-xl overflow-hidden soft-border shadow">
+          <img id="ad-img-3" src="./assets/ad3.svg" alt="Anuncio Calculadora" class="w-full h-40 object-cover" />
+          <div class="p-4 bg-white/70 dark:bg-slate-900/70">
+            <button data-view="calc" class="nav-btn px-3 py-1.5 rounded-md text-sm btn-grad w-full">Abrir Calculadora</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section id="view-quiz" class="view hidden" aria-labelledby="quiz-title">
+      <div class="card-surface rounded-xl soft-border shadow p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 id="quiz-title" class="text-xl font-extrabold text-gradient">Quiz: Sueldos y Salarios</h2>
+          <div class="text-sm text-slate-700 dark:text-slate-200 flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs opacity-70">Tiempo:</span>
+              <span id="quiz-timer" class="font-mono font-bold">--s</span>
+            </div>
+            <div>Puntaje: <span id="quiz-score" class="font-bold">0</span></div>
+            <div class="hidden md:flex items-center gap-1 text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+              Récord: <span id="quiz-best" class="font-semibold">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+          <div id="quiz-progress" class="h-2 rounded-full" style="width:0%; background: linear-gradient(90deg, #0a0a0a, #1f1f1f, #2e2e2e);"></div>
+        </div>
+        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1">
+          <div id="quiz-timebar" class="h-1 rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-600" style="width:0%"></div>
+        </div>
+        <div id="quiz-card" class="space-y-3">
+          <div id="quiz-question" class="font-semibold text-slate-900 dark:text-slate-100"></div>
+          <div id="quiz-options" class="grid gap-2"></div>
+          <div id="quiz-feedback" class="text-sm"></div>
+        </div>
+        <div class="flex gap-2">
+          <button id="quiz-next" class="px-3 py-1.5 rounded-md text-sm btn-grad">Siguiente</button>
+          <button id="quiz-restart" class="px-3 py-1.5 rounded-md bg-slate-100 text-slate-900 border text-sm dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600">Reiniciar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Casos -->
+    <section id="view-cases" class="view hidden" aria-labelledby="cases-title">
+      <div class="card-surface rounded-xl soft-border shadow p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 id="cases-title" class="text-xl font-extrabold text-gradient">Casos prácticos</h2>
+          <div class="text-sm">Caso <span id="case-index">1</span>/<span id="case-total">0</span></div>
+        </div>
+        <div id="case-card" class="space-y-3">
+          <div id="case-text" class="font-medium text-slate-900 dark:text-slate-100"></div>
+          <div id="case-options" class="grid gap-2"></div>
+          <div id="case-feedback" class="text-sm"></div>
+        </div>
+        <div class="flex gap-2">
+          <button id="case-next" class="px-3 py-1.5 rounded-md text-sm btn-grad">Siguiente</button>
+          <button id="case-restart" class="px-3 py-1.5 rounded-md bg-slate-100 text-slate-900 border text-sm dark:bg-slate-800 dark:text-slate-100 dark:border-slate-600">Reiniciar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Calculadora -->
+    <section id="view-calc" class="view hidden" aria-labelledby="calc-title">
+      <div class="card-surface rounded-xl soft-border shadow p-6 space-y-4">
+        <h2 id="calc-title" class="text-xl font-extrabold text-gradient">Calculadora sandbox (mensual)</h2>
+        <p class="text-sm text-slate-600 dark:text-slate-300">Esta herramienta educativa hace estimaciones simplificadas. Ajusta los parámetros según tu contexto (SMMLV, auxilio, recargos, etc.).</p>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <div>
+              <label class="text-sm">Presets</label>
+              <select id="preset" class="w-full mt-1 px-3 py-2 border rounded">
+                <option value="custom">Personalizado</option>
+                <option value="co-2025">Colombia 2025 (SMMLV 1.423.000; Aux 200.000)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm">Salario base mensual</label>
+              <input id="salario" type="number" class="w-full mt-1 px-3 py-2 border rounded" placeholder="Ej: 2000000" />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-sm">SMMLV</label>
+                <input id="smmlv" type="number" class="w-full mt-1 px-3 py-2 border rounded" placeholder="Define el valor" />
+              </div>
+              <div>
+                <label class="text-sm">Auxilio transporte</label>
+                <input id="auxTrans" type="number" class="w-full mt-1 px-3 py-2 border rounded" placeholder="Define el valor" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-sm">Horas extra (50%)</label>
+                <input id="hxDiurnas" type="number" class="w-full mt-1 px-3 py-2 border rounded" placeholder="0" />
+              </div>
+              <div>
+                <label class="text-sm">Horas extra (100%)</label>
+                <input id="hxNocturnas" type="number" class="w-full mt-1 px-3 py-2 border rounded" placeholder="0" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-sm">Deducción salud (%)</label>
+                <input id="pctSalud" type="number" class="w-full mt-1 px-3 py-2 border rounded" value="4" />
+              </div>
+              <div>
+                <label class="text-sm">Deducción pensión (%)</label>
+                <input id="pctPension" type="number" class="w-full mt-1 px-3 py-2 border rounded" value="4" />
+              </div>
+            </div>
+            <button id="calc-btn" class="px-3 py-2 rounded-md text-sm btn-grad">Calcular</button>
+          </div>
+          <div class="space-y-3">
+            <div class="p-3 rounded soft-border bg-slate-50/80 dark:bg-slate-800/80">
+              <h3 class="font-semibold mb-2 text-slate-900 dark:text-slate-100">Resultados</h3>
+              <div class="text-sm grid grid-cols-2 gap-2">
+                <div>Salario base:</div><div id="r-salario" class="text-right font-medium">-</div>
+                <div>Auxilio transporte:</div><div id="r-aux" class="text-right">-</div>
+                <div>Horas extra:</div><div id="r-hx" class="text-right">-</div>
+                <div>Devengado:</div><div id="r-dev" class="text-right font-semibold">-</div>
+                <div>Salud (Empleado):</div><div id="r-salud" class="text-right">-</div>
+                <div>Pensión (Empleado):</div><div id="r-pension" class="text-right">-</div>
+                <div>Neto a pagar:</div><div id="r-neto" class="text-right font-bold">-</div>
+              </div>
+              <div class="mt-3">
+                <button id="print-btn" class="px-3 py-1.5 rounded-md text-sm btn-grad">Imprimir reporte</button>
+              </div>
+            </div>
+            <div class="p-3 rounded soft-border bg-slate-50/80 dark:bg-slate-800/80">
+              <h3 class="font-semibold mb-2 text-slate-900 dark:text-slate-100">Prestaciones estimadas</h3>
+              <p class="text-xs text-slate-600 dark:text-slate-300">Cálculo referencial: cesantías 8.33%, intereses ~1% mensual, prima 8.33%, vacaciones 4.17% sobre salario base.</p>
+              <div class="text-sm grid grid-cols-2 gap-2">
+                <div>Cesantías (mes):</div><div id="r-ces" class="text-right">-</div>
+                <div>Intereses cesantías (mes aprox):</div><div id="r-intces" class="text-right">-</div>
+                <div>Prima (mes):</div><div id="r-prima" class="text-right">-</div>
+                <div>Vacaciones (mes):</div><div id="r-vaca" class="text-right">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center text-xs text-slate-500 dark:text-slate-400 py-6">
+    Herramienta educativa. Verifica siempre normativa vigente y acuerdos laborales aplicables.
+  </footer>
+
+  <!-- Encabezado para impresión -->
+  <section id="print-header" class="hidden print:block border-t border-slate-200 pt-4 max-w-5xl mx-auto px-4">
+    <div class="flex items-center gap-3">
+      <img src="./assets/logo.svg" alt="Logo" class="w-10 h-10 rounded" />
+      <div class="text-sm">
+        <div class="font-semibold" id="ph-project">Proyecto: Juego Lúdico C.S.T.</div>
+        <div id="ph-author">Autor: -</div>
+        <div id="ph-course">Curso: -</div>
+        <div id="ph-inst">Institución: -</div>
+        <div>Fecha: <span id="ph-date"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Estilos de impresión -->
+  <style>
+    @media print {
+      header, .nav-btn, #theme-toggle, #open-settings, #result-modal { display: none !important; }
+      body { background: white !important; }
+      .dark * { color: black !important; }
+      #view-calc, #view-quiz, #view-cases { break-inside: avoid; }
+    }
+  </style>
+
+  <div id="result-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow p-6">
+      <h3 id="result-title" class="text-lg font-semibold mb-2 text-slate-900 dark:text-slate-100">Resultados del Quiz</h3>
+      <div class="text-sm text-slate-700 dark:text-slate-200 mb-4">
+        <div>Total preguntas: <span id="res-total">0</span></div>
+        <div>Correctas: <span id="res-correct">0</span></div>
+        <div>Puntaje: <span id="res-score">0</span></div>
+        <div>Récord: <span id="res-best">0</span></div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button id="res-close" class="px-3 py-1.5 rounded-md border">Cerrar</button>
+        <button id="res-retry" class="px-3 py-1.5 rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900">Reintentar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de configuración del proyecto -->
+  <div id="settings-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="w-full max-w-lg bg-white dark:bg-slate-900 rounded-xl shadow p-6">
+      <h3 id="settings-title" class="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Configuración del Proyecto</h3>
+      <div class="grid md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <label class="block">Nombre del proyecto</label>
+          <input id="meta-project" type="text" class="w-full mt-1 px-3 py-2 border rounded" placeholder="Ej: Sueldos y Salarios C.S.T." />
+        </div>
+        <div>
+          <label class="block">Autor</label>
+          <input id="meta-author" type="text" class="w-full mt-1 px-3 py-2 border rounded" placeholder="Tu nombre" />
+        </div>
+        <div>
+          <label class="block">Curso/Asignatura</label>
+          <input id="meta-course" type="text" class="w-full mt-1 px-3 py-2 border rounded" placeholder="Ej: Legislación Laboral" />
+        </div>
+        <div>
+          <label class="block">Institución</label>
+          <input id="meta-inst" type="text" class="w-full mt-1 px-3 py-2 border rounded" placeholder="Universidad / Empresa" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-5">
+        <button id="settings-cancel" class="px-3 py-1.5 rounded-md border">Cancelar</button>
+        <button id="settings-save" class="px-3 py-1.5 rounded-md bg-slate-900 text-white dark:bg-white dark:text-slate-900">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./scripts/questions.js"></script>
+  <script src="./scripts/cases.js"></script>
+  <script src="./scripts/main.js"></script>
+</body>
+</html>
